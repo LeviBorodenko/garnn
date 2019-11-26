@@ -5,11 +5,25 @@ from tensorflow.keras.layers import Layer
 
 
 class GraphAttentionHead(Layer):
-    """Returns a unnormalized attention matrix based on the graph signal.
+    """Returns an attention matrix based on the graph signal.
     Corresponds to one attention head.
 
     [description]
     Based on https://arxiv.org/pdf/1710.10903.pdf
+
+
+    Arguments:
+        F {int} -- dimension of internal embedding
+        adjacency_matrix {np.ndarray} -- adjacency matrix of graph
+
+    Keyword Arguments:
+        use_bias {bool} -- whether to use bias or not (default: {True})
+        kernel_initializer {str} -- (default: {"glorot_uniform"})
+        bias_initializer {str} --  (default: {"zeros"})
+        attn_vector_initializer {str} -- (default: {"glorot_uniform"})
+        kernel_regularizer {[type]} -- (default: {None})
+        bias_regularizer {[type]} -- (default: {None})
+        attn_vector_regularizer {[type]} -- (default: {None})
 
     Extends:
         Layer
@@ -18,6 +32,7 @@ class GraphAttentionHead(Layer):
     def __init__(
         self,
         F: int,
+        adjacency_matrix: np.ndarray,
         use_bias: bool = True,
         kernel_initializer="glorot_uniform",
         bias_initializer="zeros",
@@ -33,6 +48,9 @@ class GraphAttentionHead(Layer):
         # recombine to generate the attention.
         # (F` in paper)
         self.F = F
+
+        # storing adjacency_matrix as E
+        self.E = tf.constant(adjacency_matrix, dtype="float32")
 
         # whether or not to add bias after generating the F features
         self.use_bias = use_bias
@@ -118,69 +136,33 @@ class GraphAttentionHead(Layer):
 
         # 2.
         # multiply with v1 and v2
-        d1 = tf.matmul(proj_X, self.v1)  # (N x 1)
+        d1 = tf.matmul(proj_X, self.v_1)  # (N x 1)
 
-        d2 = tf.matmul(proj_X, self.v2)
+        d2 = tf.matmul(proj_X, self.v_2)
 
         # 3.
         # create an (N x N) matrix of pairwise sums of entries from
         # d1 and d2.
         # We utilise numpy broadcasting to achieve that
-        A = d1 + tf.transpose(d2)
+        # Note: we need to specify that we only transpose
+        # the last 2 dimensions of d2 which due to batch-wise
+        # data can have 3 dimensions.
+        A = d1 + tf.transpose(d2, perm=[0, 2, 1])
 
-        # The above A is the unnormalized attention matrix. Which
-        # is exactly what this layer is supposed to output
+        # The above A is the unnormalized attention matrix.
+        # first we remove all entries in A that correspond to edges that
+        # are not in the graph.
+        A = tf.multiply(A, self.E)
+
+        # apply non linearity (as in paper: LeakyReLU with a=0.2)
+        A = tf.nn.leaky_relu(A, alpha=0.2)
+
+        # now we softmax this matrix over its columns to normalise it.
+        A = tf.nn.softmax(A)
+
         return A
 
     def compute_output_shape(self, input_shape):
 
         # return (N x N) attention matrix
         return self.N, self.N
-
-
-class AdjacencyFeeder(Layer):
-    """Once initiated with the adjacency matrix of your network,
-    this layer is used to access that matrix later on.
-
-    Arguments:
-        adjacency_matrix {np.ndarray} -- adjacency matrix
-
-    Extends:
-        Layer
-    """
-
-    def __init__(self, adjacency_matrix: np.ndarray):
-        super(AdjacencyFeeder, self).__init__()
-
-        # store adjacency matrix on initiation
-        self.E = tf.constant(adjacency_matrix)
-
-    def call(self, inputs):
-
-        # return stored matrix on call
-        return self.E
-
-
-class AttentionNormaliser(Layer):
-    """Takes an unnormalised attention matrix and normalises it
-    using the adjacency matrix.
-
-    Let Â be the unnormalised attention,
-    E is the adjacency matrix,
-    * is the Hadamard product operation and
-    softmax() is the softmax operation applied to each column of a
-    matrix.
-    Then the normalised attention is given by:
-
-    A = softmax(Â * E)
-
-    Note that this is a transition matrix and can thus be used in a
-    diffusion process.
-
-    Extends:
-        Layer
-    """
-
-    def __init__(self, arg):
-        super(AttentionNormaliser, self).__init__()
-        self.arg = arg
