@@ -8,34 +8,27 @@ import tensorflow.keras as keras
 import tensorflow.keras.layers as layers
 
 from garnn.components.attention import AttentionMechanism
-from garnn.layers.gat import GraphAttentionHead, test_dim
+from garnn.layers.diffconv import DiffuseFeatures
 
 # mute printing to termianl
 # sys.stdout = open(os.devnull, "w")
 
 
 # creating train data
-x_train = np.random.normal(size=(1, 10, 2))
-
-y_train = np.ones((1, 2, 10, 10))
-
+x_train = np.random.normal(size=(1000, 10, 2))
+y_train = np.ones((1000, 2))
 E = np.random.randint(0, 2, size=(10, 10))
 
+# building test model
+X = layers.Input(shape=(10, 2))
+A = AttentionMechanism(5, E, 5, use_reverse_diffusion=False)(X)
+output = DiffuseFeatures(3)((X, A))
 
-# creating data
-x_val = np.random.normal(size=(100, 2), scale=100)
+model = keras.Model(inputs=X, outputs=output)
 
-y_val = (x_val[:, 1] ** 2 + x_val[:, 0] ** 2) ** 0.5
-
-
-inp = layers.Input(shape=(10, 2))
-
-output = AttentionMechanism(5, E, 5)(inp)
-
-model = keras.Model(inputs=inp, outputs=output)
 # Specify the training configuration (optimizer, loss, metrics)
 model.compile(
-    optimizer="SGD",  # Optimizer
+    optimizer="SGD",
     # Loss function to minimize
     loss="MSE",
     metrics=["mae"],
@@ -50,4 +43,3 @@ tensorboard_callback = tf.keras.callbacks.TensorBoard(
 model.fit(
     x_train, y_train, batch_size=50, epochs=10, callbacks=[tensorboard_callback],
 )
-# validation_data=(x_val, y_val))

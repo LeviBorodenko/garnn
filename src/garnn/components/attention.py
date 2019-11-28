@@ -1,19 +1,28 @@
 import numpy as np
-import tensorflow as tf
-import tensorflow.keras as keras
 import tensorflow.keras.layers as layers
-from tensorflow.keras import Model
 
 from garnn.layers.gat import GraphAttentionHead
 
 
 class AttentionMechanism(layers.Layer):
-    """[summary]
+    """Attention Mechanism utilised by GARNNs.
 
-    [description]
+    We use multiple attention heads and average their outputs.
+    Takes a graph signal and returns 1 or 2 edge attention matrices.
+
+    Arguments:
+        F {int} -- Dimenions of hidden representation used for attention.
+        adjacency_matrix {np.ndarray} -- adjacency matrix of graph
+
+    Keyword Arguments:
+        num_heads {int} -- Number of attenheads to be used. (default: {1})
+        use_reverse_diffusion {bool} -- Whether or not to us both A_in
+        and A_out or simply only A_in (default: {True})
+        use_bias {bool} -- Use bias in calculating the hidden representation
+        (default: {True})
 
     Extends:
-        Model
+        Layer
     """
 
     def __init__(
@@ -53,7 +62,8 @@ class AttentionMechanism(layers.Layer):
     def call(self, inputs):
 
         attention_layers = []
-        # connect all attention layers to input
+
+        # apply all attention layers to inputs
         for layer in self.attn_heads:
 
             attention_layers.append(layer(inputs))

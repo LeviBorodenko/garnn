@@ -143,7 +143,7 @@ class GraphAttentionHead(Layer):
         # :
 
         # 1. calculate X*W where X is the (N x K) graph signal
-        # and W the (K x F) kernel matrix
+        # and W is the (K x F) kernel matrix
         # 2. let v1 and v2 be two (F x 1) vectors and find
         # d1 = X*W*v1, d2 = X*W*v2 (N x 1)
         # 3. Using numpys broadcasting rules we now calculate
@@ -189,19 +189,20 @@ class GraphAttentionHead(Layer):
         return A
 
     def call(self, inputs):
+
         # get graph signal from inputs
         X = inputs
 
-        # check if don't use the reverse diffusion process or
-        # if they are both the same
+        # check if we aren't using the reverse diffusion process
         if not self.use_reverse_diffusion:
 
-            # calculate only A_in
+            #  only calculate A_in
             A_in = self.get_attention(X, self.E)
 
             return A_in
 
         else:
+
             # calculate A_in and A_out
             A_in = self.get_attention(X, self.E)
 
@@ -211,7 +212,8 @@ class GraphAttentionHead(Layer):
 
             A_out = self.get_attention(X, E_t)
 
-            # stack on the non batch dimension
+            # stack on the first non batch dimension
+            # to obtain (batch, 2, N, N) shape
             return tf.stack([A_in, A_out], 1)
 
     def compute_output_shape(self, input_shape):
@@ -223,17 +225,3 @@ class GraphAttentionHead(Layer):
         # only return A_in
         else:
             return self.N, self.N
-
-
-class test_dim(Layer):
-    """docstring for test_dim"""
-
-    def __init__(self):
-        super(test_dim, self).__init__()
-
-    def build(self, input_shape):
-        test = is_using_reverse_process(input_shape)
-        print(test)
-
-    def call(self, inputs):
-        return inputs
