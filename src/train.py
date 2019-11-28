@@ -6,18 +6,21 @@ import numpy as np
 import tensorflow as tf
 import tensorflow.keras as keras
 import tensorflow.keras.layers as layers
-from layers.gat import GraphAttentionHead
+
+from garnn.components.attention import AttentionMechanism
+from garnn.layers.gat import GraphAttentionHead, test_dim
 
 # mute printing to termianl
 # sys.stdout = open(os.devnull, "w")
 
 
 # creating train data
-x_train = np.random.normal(size=(500, 10, 2))
+x_train = np.random.normal(size=(1, 10, 2))
 
-y_train = np.ones((500, 10, 10))
+y_train = np.ones((1, 2, 10, 10))
 
-E = np.ones((10, 10))
+E = np.random.randint(0, 2, size=(10, 10))
+
 
 # creating data
 x_val = np.random.normal(size=(100, 2), scale=100)
@@ -26,11 +29,10 @@ y_val = (x_val[:, 1] ** 2 + x_val[:, 0] ** 2) ** 0.5
 
 
 inp = layers.Input(shape=(10, 2))
-output = GraphAttentionHead(F=50, adjacency_matrix=E)(inp)
+
+output = AttentionMechanism(5, E, 5)(inp)
 
 model = keras.Model(inputs=inp, outputs=output)
-
-
 # Specify the training configuration (optimizer, loss, metrics)
 model.compile(
     optimizer="SGD",  # Optimizer

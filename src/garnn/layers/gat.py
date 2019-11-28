@@ -3,6 +3,8 @@ import tensorflow as tf
 from tensorflow.keras import initializers, regularizers
 from tensorflow.keras.layers import Layer
 
+from garnn.layers.utils import is_using_reverse_process
+
 
 class GraphAttentionHead(Layer):
     """Returns an attention matrix based on the graph signal.
@@ -18,6 +20,9 @@ class GraphAttentionHead(Layer):
 
     Keyword Arguments:
         use_bias {bool} -- whether to use bias or not (default: {True})
+        use_reverse_diffusion {bool} -- if True, we will return 2 attention heads,
+        one for the inbound process (A_in in the paper) and one for the out-bound process,
+        (A_out in the paper).
         kernel_initializer {str} -- (default: {"glorot_uniform"})
         bias_initializer {str} --  (default: {"zeros"})
         attn_vector_initializer {str} -- (default: {"glorot_uniform"})
@@ -34,6 +39,7 @@ class GraphAttentionHead(Layer):
         F: int,
         adjacency_matrix: np.ndarray,
         use_bias: bool = True,
+        use_reverse_diffusion: bool = True,
         kernel_initializer="glorot_uniform",
         bias_initializer="zeros",
         attn_vector_initializer="glorot_uniform",
@@ -52,8 +58,28 @@ class GraphAttentionHead(Layer):
         # storing adjacency_matrix as E
         self.E = tf.constant(adjacency_matrix, dtype="float32")
 
+        # get number of nodes from adjacency_matrix
+        self.N = self.E.shape[-1]
+
         # whether or not to add bias after generating the F features
         self.use_bias = use_bias
+
+        # whether to return the reversed process attention or
+        # just 2 copies of the same
+        self.use_reverse_diffusion = use_reverse_diffusion
+
+        # if attention matrix is symmetric, then the reversed process
+        # is the same as the forward process
+
+        # count how many elements differ between E and E^T
+        comparision = tf.equal(self.E, tf.transpose(self.E))
+        num_diff_entries = int(tf.math.count_nonzero(comparision))
+
+        # if E = E^T
+        if num_diff_entries == self.N ** 2:
+
+            # no point using reverse process
+            self.use_reverse_diffusion = False
 
         # storing initializers
         self.kernel_initializer = initializers.get(kernel_initializer)
@@ -71,8 +97,8 @@ class GraphAttentionHead(Layer):
         # Number of features per node
         self.K = input_shape[-1]
 
-        # Number of nodes
-        self.N = input_shape[-2]
+        # Check # nodes agrees with adjacency_matrix
+        assert self.N == input_shape[-2]
 
         # initializing kernel
         # W in paper
@@ -110,7 +136,7 @@ class GraphAttentionHead(Layer):
             name="attn_vector_2",
         )
 
-    def call(self, inputs):
+    def get_attention(self, graph_signal, adjacency_matrix):
 
         # If X is the graph signal then note that
         # doing the following is equivalent to the matrix in eq (1)
@@ -124,7 +150,7 @@ class GraphAttentionHead(Layer):
         # A = d1 + d2^T which will be (N x N)
 
         # graph signal with K features on N nodes
-        X = inputs
+        X = graph_signal
 
         # 1.
         # Affine project each feature from R^K to R^F
@@ -152,7 +178,7 @@ class GraphAttentionHead(Layer):
         # The above A is the unnormalized attention matrix.
         # first we remove all entries in A that correspond to edges that
         # are not in the graph.
-        A = tf.multiply(A, self.E)
+        A = tf.multiply(A, adjacency_matrix)
 
         # apply non linearity (as in paper: LeakyReLU with a=0.2)
         A = tf.nn.leaky_relu(A, alpha=0.2)
@@ -162,7 +188,52 @@ class GraphAttentionHead(Layer):
 
         return A
 
+    def call(self, inputs):
+        # get graph signal from inputs
+        X = inputs
+
+        # check if don't use the reverse diffusion process or
+        # if they are both the same
+        if not self.use_reverse_diffusion:
+
+            # calculate only A_in
+            A_in = self.get_attention(X, self.E)
+
+            return A_in
+
+        else:
+            # calculate A_in and A_out
+            A_in = self.get_attention(X, self.E)
+
+            # A_out is just as A_in but we use the transpose of the
+            # adjacency matrix
+            E_t = tf.transpose(self.E)
+
+            A_out = self.get_attention(X, E_t)
+
+            # stack on the non batch dimension
+            return tf.stack([A_in, A_out], 1)
+
     def compute_output_shape(self, input_shape):
 
-        # return (N x N) attention matrix
-        return self.N, self.N
+        # if true, we return A_in and A_out
+        if self.use_reverse_diffusion:
+            return 2, self.N, self.N
+
+        # only return A_in
+        else:
+            return self.N, self.N
+
+
+class test_dim(Layer):
+    """docstring for test_dim"""
+
+    def __init__(self):
+        super(test_dim, self).__init__()
+
+    def build(self, input_shape):
+        test = is_using_reverse_process(input_shape)
+        print(test)
+
+    def call(self, inputs):
+        return inputs
