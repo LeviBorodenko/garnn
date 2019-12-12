@@ -34,7 +34,7 @@ class Linear(layers.Layer):
 
 
 def is_using_reverse_process(input_shape):
-    """Check if output of attention head is a single
+    """Check if output of attention meachanism is a single
     Attention matrix or 2 attention matrices - one for A_in
     one for A_out
 

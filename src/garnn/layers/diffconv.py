@@ -6,6 +6,8 @@ import tensorflow as tf
 import tensorflow.keras.layers as layers
 from tensorflow.keras import constraints, initializers, regularizers
 
+from garnn.layers.utils import is_using_reverse_process
+
 
 class DiffuseFeatures(layers.Layer):
     """Applies diffusion graph convolution given a
@@ -29,8 +31,9 @@ class DiffuseFeatures(layers.Layer):
         theta_initializer="ones",
         theta_regularizer=None,
         theta_constraint=None,
+        **kwargs
     ):
-        super(DiffuseFeatures, self).__init__()
+        super(DiffuseFeatures, self).__init__(kwargs)
 
         # number of diffusino steps (K in paper)
         self.K = num_diffusion_steps
@@ -73,7 +76,7 @@ class DiffuseFeatures(layers.Layer):
         X, A = inputs
 
         # calculate diffusion matrix: sum theta_k * Attention_t^k
-        # tf.polyval needs a list of tensors as the coeff. so ww
+        # tf.polyval needs a list of tensors as the coeff. thus we
         # unstack theta
         diffusion_matrix = tf.math.polyval(tf.unstack(self.theta), A)
 
@@ -83,7 +86,130 @@ class DiffuseFeatures(layers.Layer):
 
         # now we add all diffused features (columns of the above matrix)
         # and apply a non linearity to obtain H:,q (eq. 3 in paper)
-        H = tf.math.reduce_sum(diffused_features, axis=1)
-        H = tf.sigmoid(H)
+        H = tf.math.reduce_sum(diffused_features, axis=2)
+        H = tf.tanh(H)
+
+        # H has shape (batch, N) but as it is the sum of columns
+        # we reshape it into (batch, N, 1)
+        return tf.expand_dims(H, -1)
+
+
+class GraphDiffusionConvolution(layers.Layer):
+    """Applies Graph Diffusion Convolution to a Graph Signal
+    X and attention matrices A.
+
+    You need to specify how many diffusion steps (K in paper) and
+    features (Q in paper) you want
+
+    Arguments:
+        features {int} -- Q in paper
+        num_diffusion_steps {int} -- K in paper
+        **kwargs {[type]} -- [description]
+
+    Keyword Arguments:
+        theta_initializer {str} -- [description] (default: {"ones"})
+        theta_regularizer {[type]} -- [description] (default: {None})
+        theta_constraint {[type]} -- [description] (default: {None})
+    """
+
+    def __init__(
+        self,
+        features: int,
+        num_diffusion_steps: int,
+        theta_initializer="ones",
+        theta_regularizer=None,
+        theta_constraint=None,
+        **kwargs
+    ):
+        super(GraphDiffusionConvolution, self).__init__(kwargs)
+
+        # number of features to generate (Q in paper)
+        assert features > 0
+        self.Q = features
+
+        # number of diffusion steps for each output feature
+        self.K = num_diffusion_steps
+
+        # storing initializer, regularizer and contraints for theta
+        self.theta_initializer = theta_initializer
+        self.theta_regularizer = theta_regularizer
+        self.theta_constraint = theta_constraint
+
+    def build(self, input_shape):
+
+        # We expect to receive (X, A)
+        # A - Attention (may be 2 matrices if we use reverse
+        #                diffusion) (N, N) or (2, N, N)
+        # X - graph signal (N, F)
+        X_shape, A_shape = input_shape
+
+        # check if singular or dual attention
+        self.is_dual = is_using_reverse_process(A_shape)
+
+        # initialise Q diffusion convolution filters
+        self.filters = []
+
+        for _ in range(self.Q):
+            layer = DiffuseFeatures(
+                num_diffusion_steps=self.K,
+                theta_initializer=self.theta_initializer,
+                theta_regularizer=self.theta_regularizer,
+                theta_constraint=self.theta_constraint,
+            )
+            self.filters.append(layer)
+
+    def apply_filters(self, X, A):
+        """Applies diffusion convolution self.Q times to get a
+        (batch, N, Q) diffused graph signal
+
+        [description]
+
+        Arguments:
+            X {(batch, N, K)} -- graph signal
+            A {(batch , N, N)} -- Attention matrix
+        """
+
+        # this will be a list of Q diffused features.
+        # Each diffused feature is a (batch, N, 1) tensor.
+        # Later we will concat all the features to get one
+        # (batch, N, Q) diffused graph signal
+        diffused_features = []
+
+        # iterating over all Q diffusion filters
+        for diffusion in self.filters:
+            diffused_feature = diffusion((X, A))
+            diffused_features.append(diffused_feature)
+
+        # concat them into (batch, N, Q) diffused graph signal
+        H = tf.concat(diffused_features, -1)
 
         return H
+
+    def call(self, inputs):
+
+        # get graph signal X and attention tensor A
+        X, A = inputs
+
+        if self.is_dual is False:
+
+            # simply apply the self.Q filters to get (batch, N, Q)
+            # diffused graph signal
+            H = self.apply_filters(X, A)
+            return H
+
+        else:
+            # if we have 2 attention matrices then GARRNS simply
+            # get the two diffused graph signals and add them together
+            # equation 2 in paper
+            ####
+
+            # First we get both attention matrices
+            A_in, A_out = tf.unstack(A, axis=-3)
+
+            # get both diffused graph signals
+            H_in = self.apply_filters(X, A_in)
+            H_out = self.apply_filters(X, A_out)
+
+            # get their sum
+            H = layers.Add()([H_in, H_out])
+            return H
