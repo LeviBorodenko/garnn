@@ -199,8 +199,8 @@ class GraphDiffusionConvolution(layers.Layer):
 
         else:
             # if we have 2 attention matrices then GARRNS simply
-            # get the two diffused graph signals and add them together
-            # equation 2 in paper
+            # get the two diffused graph signals and add them together.
+            # Equation 2 in paper
             ####
 
             # First we get both attention matrices
