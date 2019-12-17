@@ -7,32 +7,26 @@ import tensorflow as tf
 import tensorflow.keras as keras
 import tensorflow.keras.layers as layers
 
-from garnn.components.attention import AttentionMechanism
-from garnn.layers.diffconv import DiffuseFeatures, GraphDiffusionConvolution
+from garnn.models.garnn import garnn_model
 
 # mute printing to termianl
 # sys.stdout = open(os.devnull, "w")
 
 
 # creating train data
-x_train = np.random.normal(size=(1000, 10, 2))
-y_train = np.ones((1000, 10, 3))
-E = np.random.randint(0, 2, size=(10, 10))
+# x_train = np.random.normal(size=(10, 12, 207, 10))
+# y_train = np.ones((10, 207, 1))
 
-# building test model
-X = layers.Input(shape=(10, 2))
-A = AttentionMechanism(5, E, 5, use_reverse_diffusion=True)(X)
-output = GraphDiffusionConvolution(3, 3)((X, A))
-
-model = keras.Model(inputs=X, outputs=output)
 
 # Specify the training configuration (optimizer, loss, metrics)
-model.compile(
+garnn_model.compile(
     optimizer="SGD",
     # Loss function to minimize
     loss="MSE",
     metrics=["mae"],
 )
+
+garnn_model.summary()
 
 log_dir = "logs/fit/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
 tensorboard_callback = tf.keras.callbacks.TensorBoard(
@@ -40,6 +34,6 @@ tensorboard_callback = tf.keras.callbacks.TensorBoard(
 )
 
 
-model.fit(
-    x_train, y_train, batch_size=50, epochs=10, callbacks=[tensorboard_callback],
-)
+# garnn_model.fit(
+#     x_train, y_train, batch_size=2, epochs=1, callbacks=[tensorboard_callback],
+# )

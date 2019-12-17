@@ -21,6 +21,37 @@ class AttentionMechanism(layers.Layer):
         use_bias {bool} -- Use bias in calculating the hidden representation
         (default: {True})
 
+    Layer-inputs:
+         X (batch, timesteps, N, F), graph signals on N nodes with F
+            features. Also works with individual graph signals with no
+            time steps, i.e. (batch, N, F).
+
+    Layer-outputs:
+        A (batch, timesteps, 2, N, N), 2 attention matrices (if we use
+        the reverse process) for each graph signal. If we do not use
+        the reverse process, e.q. when the adjacency matric is symmetric
+        then we get (batch, timesteps, N, N).
+        If we do not have a time series then (batch, 2, N, N) or (batch, N, N)
+        is returned.
+
+    Example:
+
+        # creating train data
+        x_train = np.random.normal(size=(1000, 10, 10, 2))
+        y_train = np.ones((1000, 10, 2, 10, 10))
+
+        # random adjacency_matrix
+        E = np.random.randint(0, 2, size=(10, 10))
+
+        # building tiny model
+        X = layers.Input(shape=(None, 10, 2))
+        A = AttentionMechanism(F=5,
+                               adjacency_matrix=E,
+                               num_heads=5,
+                               use_reverse_diffusion=True)(X)
+
+        model = keras.Model(inputs=X, outputs=A)
+
     Extends:
         Layer
     """

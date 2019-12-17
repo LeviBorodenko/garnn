@@ -3,8 +3,6 @@ import tensorflow as tf
 from tensorflow.keras import initializers, regularizers
 from tensorflow.keras.layers import Layer
 
-from garnn.layers.utils import is_using_reverse_process
-
 
 class GraphAttentionHead(Layer):
     """Returns an attention matrix based on the graph signal.
@@ -100,6 +98,10 @@ class GraphAttentionHead(Layer):
         # Check # nodes agrees with adjacency_matrix
         assert self.N == input_shape[-2]
 
+        # Check if we have a time series of graph signals
+        if len(input_shape) > 3:
+            self.is_timeseries = True
+
         # initializing kernel
         # W in paper
         self.W = self.add_weight(
@@ -173,7 +175,10 @@ class GraphAttentionHead(Layer):
         # Note: we need to specify that we only transpose
         # the last 2 dimensions of d2 which due to batch-wise
         # data can have 3 dimensions.
-        A = d1 + tf.transpose(d2, perm=[0, 2, 1])
+        if self.is_timeseries:
+            A = d1 + tf.transpose(d2, perm=[0, 1, 3, 2])
+        else:
+            A = d1 + tf.transpose(d2, perm=[0, 2, 1])
 
         # The above A is the unnormalized attention matrix.
         # first we remove all entries in A that correspond to edges that
@@ -214,7 +219,7 @@ class GraphAttentionHead(Layer):
 
             # stack on the first non batch dimension
             # to obtain (batch, 2, N, N) shape
-            return tf.stack([A_in, A_out], 1)
+            return tf.stack([A_in, A_out], -3)
 
     def compute_output_shape(self, input_shape):
 

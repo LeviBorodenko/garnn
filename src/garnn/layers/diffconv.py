@@ -1,4 +1,4 @@
-"""Graph Diffusion RNN
+"""Graph Diffusion
 
 Based on https://arxiv.org/pdf/1707.01926.pdf
 """
@@ -12,6 +12,7 @@ from garnn.layers.utils import is_using_reverse_process
 class DiffuseFeatures(layers.Layer):
     """Applies diffusion graph convolution given a
     graph signal X and an attention matrix A.
+    Returns a single new feature.
 
     Procedure is based on https://arxiv.org/pdf/1707.01926.pdf
 
@@ -23,6 +24,8 @@ class DiffuseFeatures(layers.Layer):
         theta_initializer {str} -- (default: {"ones"})
         theta_regularizer {[type]} -- (default: {None})
         theta_constraint {[type]} -- (default: {None})
+        use_activation {bool} -- whether or not to apply tanh to the
+        defused features (default: {False})
     """
 
     def __init__(
@@ -31,6 +34,7 @@ class DiffuseFeatures(layers.Layer):
         theta_initializer="ones",
         theta_regularizer=None,
         theta_constraint=None,
+        use_activation: bool = False,
         **kwargs
     ):
         super(DiffuseFeatures, self).__init__(kwargs)
@@ -44,6 +48,8 @@ class DiffuseFeatures(layers.Layer):
         self.theta_initializer = initializers.get(theta_initializer)
         self.theta_regularizer = regularizers.get(theta_regularizer)
         self.theta_constraint = constraints.get(theta_constraint)
+
+        self.use_activation = use_activation
 
     def build(self, input_shape):
 
@@ -87,7 +93,8 @@ class DiffuseFeatures(layers.Layer):
         # now we add all diffused features (columns of the above matrix)
         # and apply a non linearity to obtain H:,q (eq. 3 in paper)
         H = tf.math.reduce_sum(diffused_features, axis=2)
-        H = tf.tanh(H)
+        if self.use_activation:
+            H = tf.tanh(H)
 
         # H has shape (batch, N) but as it is the sum of columns
         # we reshape it into (batch, N, 1)
@@ -99,7 +106,9 @@ class GraphDiffusionConvolution(layers.Layer):
     X and attention matrices A.
 
     You need to specify how many diffusion steps (K in paper) and
-    features (Q in paper) you want
+    features (Q in paper) you want.
+
+    returns a (batch, N, Q) diffused graph signal
 
     Arguments:
         features {int} -- Q in paper
@@ -110,6 +119,8 @@ class GraphDiffusionConvolution(layers.Layer):
         theta_initializer {str} -- [description] (default: {"ones"})
         theta_regularizer {[type]} -- [description] (default: {None})
         theta_constraint {[type]} -- [description] (default: {None})
+        use_activation {bool} -- whether or not to apply tanh to the
+        defused features (default: {False})
     """
 
     def __init__(
@@ -119,6 +130,7 @@ class GraphDiffusionConvolution(layers.Layer):
         theta_initializer="ones",
         theta_regularizer=None,
         theta_constraint=None,
+        use_activation: bool = False,
         **kwargs
     ):
         super(GraphDiffusionConvolution, self).__init__(kwargs)
@@ -134,6 +146,8 @@ class GraphDiffusionConvolution(layers.Layer):
         self.theta_initializer = theta_initializer
         self.theta_regularizer = theta_regularizer
         self.theta_constraint = theta_constraint
+
+        self.use_activation = use_activation
 
     def build(self, input_shape):
 
@@ -155,6 +169,7 @@ class GraphDiffusionConvolution(layers.Layer):
                 theta_initializer=self.theta_initializer,
                 theta_regularizer=self.theta_regularizer,
                 theta_constraint=self.theta_constraint,
+                use_activation=self.use_activation,
             )
             self.filters.append(layer)
 

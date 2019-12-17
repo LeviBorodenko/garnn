@@ -2,9 +2,11 @@
 Changelog
 =========
 
-Version 0.1
+Version 0.9
 ===========
 
-- Feature A added
-- FIX: nasty bug #1729 fixed
-- add your changes here!
+- Finished core features:
+	- Attention Mechanism
+	- Diffusion Graph Convolution
+	- GRU based on the above
+	- reimplementation of the model used in https://milets19.github.io/papers/milets19_paper_8.pdf
