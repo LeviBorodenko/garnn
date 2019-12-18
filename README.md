@@ -87,19 +87,19 @@ E = np.random.randint(0, 2, size=(207, 207))
 X = Input(shape=(None, 207, 10))
 
 # creating attention mechanism with 3 heads and an
-# embedding size of 16
+# embedding-size of 16
 A = AttentionMechanism(16, adjacency_matrix=E, num_heads=3)(X)
 
-# now piping X and A into the 2 GRU layers
+# Piping X and A into the 2 stacked GRU layers.
 # First layer streches the features into 64 diffused features.
-# We assume the we are using 6 hop diffusions.
+# We assume that we are using 6 hop diffusions.
 gru_1 = garnn_gru(num_hidden_features=64, num_diffusion_steps=6, return_sequences=True)(
     (X, A)
 )
 
-# And then we use another GRU to shrink it back to 1 feature - the feature
+# And then we use the 2nd GRU to shrink it back to 1 feature - the feature
 # that we are predicting. We use the same attention for this layer, but note that
-# we could also introduce a new attention mechanism for the next GRU.
+# we could've also introduce a new attention mechanism for this GRU.
 output = garnn_gru(num_hidden_features=1, num_diffusion_steps=6)((gru_1, A))
 
 garnn_model = Model(inputs=X, outputs=output)
