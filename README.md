@@ -6,12 +6,12 @@ Moreover, we offer stand-alone implementations of the _Graph Attention Mechanism
 ### Installation
 Simply run `pip install garnn`. Dependencies are `numpy; tensorflow`.
 
-### Features
+### Usage
 
 The core data structure is the _graph signal_. If we have N nodes in a graph each having F observed features then the graph signal is the tensor with shape (batch, N, F) corresponding to the data produced by all nodes. Often we have sequences of graph signals in a time series. We will call them _temporal_ graph signals and assume a shape of (batch, time steps, N, F). We also need to know the adjacency matrix E of the underlying graph with shape (N, N).
 
 #### Non-Temporal Data (batch, N, F)
-All but the recurrent layers work with non - temporal data, i.e. the data points are individual graph signals and not sequences of graph signals.
+All but the recurrent layers work with non-temporal data, i.e. the data points are individual graph signals and not sequences of graph signals.
 
 The `AttentionMechanism` found in `garnn.components.attention` will take a graph signal and return an attention matrix as described in [Veličković et al., 2017](https://arxiv.org/abs/1710.10903).
 
