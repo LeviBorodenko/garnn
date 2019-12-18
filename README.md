@@ -11,7 +11,7 @@ Simply run `pip install garnn`. Dependencies are `numpy; tensorflow`.
 The core data structure is the _graph signal_. If we have N nodes in a graph each having F observed features then the graph signal is the tensor with shape (batch, N, F) corresponding to the data produced by all nodes. Often we have sequences of graph signals in a time series. We will call them _temporal_ graph signals and assume a shape of (batch, time steps, N, F). We also need to know the adjacency matrix E of the underlying graph with shape (N, N).
 
 #### Non-Temporal Data (batch, N, F)
-All but the recurrent layers work with non - temporal data, i.e. the data points are individual graph signals and not seqeunces of graph signals.
+All but the recurrent layers work with non - temporal data, i.e. the data points are individual graph signals and not sequences of graph signals.
 
 The `AttentionMechanism` found in `garnn.components.attention` will take a graph signal and return an attention matrix as described in [Veličković et al., 2017](https://arxiv.org/abs/1710.10903).
 
@@ -26,14 +26,14 @@ The layer is initiated with the following parameters:
 
 The output is of shape (batch, N, N). If `use_reverse_diffusion` is true then we obtain 2 attention matrices and thus the shape is (batch, 2, N, N).
 
-The `GraphDiffusionConvolution` layer in `garnn.layers.diffconv` offers diffusion graph convolution as described by [(Li et al., 2017)](https://arxiv.org/pdf/1707.01926.pdf). It operates on a tuple containing a graph signal X and an adjacency matrix A(usually an attention matrix returned by an attention mechanism) and is initiated with the following parameters
+The `GraphDiffusionConvolution` layer in `garnn.layers.diffconv` offers diffusion graph convolution as described by [(Li et al., 2017)](https://arxiv.org/pdf/1707.01926.pdf). It operates on a tuple containing a graph signal X and an adjacency matrix A (usually an attention matrix returned by an attention mechanism) and is initiated with the following parameters
 
 | Parameter | Function |
 |:------------- | :--------|
 |`features` (required) | Number output features. Q in the paper.|
 |`num_diffusion_steps` (required) | Number of hops done by the diffusion process. K in the paper. |
 
-There are more specialised parameters like regularisers and initialisers - - those can be found in the doc string. The convolutional layer returns a diffused graph signal of shape (batch, N, Q).
+There are more specialised parameters like regularisers and initialisers -- those can be found in the doc string. The convolutional layer returns a diffused graph signal of shape (batch, N, Q).
 
 Thus, if we have 10 nodes with 5 features each and we would like to apply diffusion graph convolution with 20 features using a 5-head attention mechanism with an internal embedding of 64 units then we would need to run
 
