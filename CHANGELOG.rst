@@ -29,3 +29,8 @@ Version 0.9.3
 ===========
 
 - Final upload to real pypi and final test
+
+Version 1.0.0
+===========
+
+- All good. Ready for release
