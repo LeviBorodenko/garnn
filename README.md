@@ -1,5 +1,5 @@
 # GARNN [TensorFlow]
-TensorFlow implementation of _Graphical Attention Recurrent Networks_ based on work by [Cirstea et al., 2019](https://milets19.github.io/papers/milets19_paper_8.pdf).
+TensorFlow implementation of _Graphical Attention Recurrent Neural Networks_ based on work by [Cirstea et al., 2019](https://milets19.github.io/papers/milets19_paper_8.pdf).
 
 Moreover, we offer stand-alone implementations of the _Graph Attention Mechanism_ [(Veličković et al., 2017)](https://arxiv.org/abs/1710.10903) and _Diffusional Graph Convolution_ [(Li et al., 2017)](https://arxiv.org/pdf/1707.01926.pdf).
 
