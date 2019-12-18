@@ -24,7 +24,7 @@ The layer is initiated with the following parameters:
 |`num_heads` (default: 1) | Number of attention matrices that are averaged to return the output attention.|
 |`use_reverse_diffusion` (defaut: True) | Whether or not to calculate A_in and A_out as done by [Cirstea et al., 2019](https: // milets19.github.io / papers / milets19_paper_8.pdf). If E is symmetric then the value will be set to False.|
 
-The output is of shape(batch, N, N). If `use_reverse_diffusion` is true then we obtain 2 attention matrices and thus the shape is (batch, 2, N, N).
+The output is of shape (batch, N, N). If `use_reverse_diffusion` is true then we obtain 2 attention matrices and thus the shape is (batch, 2, N, N).
 
 The `GraphDiffusionConvolution` layer in `garnn.layers.diffconv` offers diffusion graph convolution as descirbed by [(Li et al., 2017)](https: // arxiv.org / pdf / 1707.01926.pdf). It operates on a tuple containing a graph signal X and an adjancency matric A(usually an attention matrix returned by an attention mechanism) and is initiated with the following parameters
 
@@ -33,9 +33,9 @@ The `GraphDiffusionConvolution` layer in `garnn.layers.diffconv` offers diffusio
 |`features` (required) | Number output features. Q in the paper.|
 |`num_diffusion_steps` (required) | Number of hops done by the diffusion process. K in the paper. |
 
-There are more specialised parameters like regularisers and initialisers - - those can be found in the doc string. The convolutional layer returns a diffused graph signal of shape(batch, N, Q).
+There are more specialised parameters like regularisers and initialisers - - those can be found in the doc string. The convolutional layer returns a diffused graph signal of shape (batch, N, Q).
 
-Thus, if we have 10 nodes with 5 features each and we would like to apply diffusion graph convolution with 20 features using a 5 - head attention mechanism with an internal embedding of 64 units then we would need to run
+Thus, if we have 10 nodes with 5 features each and we would like to apply diffusion graph convolution with 20 features using a 5-head attention mechanism with an internal embedding of 64 units then we would need to run
 
 ```python
 from garnn.components.attention import AttentionMechanism
@@ -48,8 +48,8 @@ inputs = Input(shape=(10, 5))
 # Initiating attention mechanism. Make sure you define E
 Attn = AttentionMechanism(64, adjacency_matrix=E, num_heads=5)(inputs)
 
-# Now the convolutional layer. Make sure you use the correct order in the tuple:
-# Graph signal is always first!
+# Now the convolutional layer. Make sure you use the correct order in the
+# input-tuple: Graph signal is always first!
 output = GraphDiffusionConvolution(
     features=10, num_diffusion_steps=5)((inputs, Attn))
 ```
@@ -57,9 +57,9 @@ output = GraphDiffusionConvolution(
 
 #### Temporal Data (batch, timesteps, N, F)
 
-Both `AttentionMechanism` and `DiffusionGraphConvolution` natrually extend to temporal graph signals. The output now simply has an additional timesteps dimension.
+Both `AttentionMechanism` and `DiffusionGraphConvolution` naturally extend to temporal graph signals. The output now simply has an additional timesteps dimension.
 
-The `garnn_gru` layer found in `garnn.components.garnn_gru` is the diffusional & attention - based GRU introduced by [Cirstea et al., 2019](https: // milets19.github.io / papers / milets19_paper_8.pdf). It operates on temporal graph signals and an attention mechanism. Initate with
+The `garnn_gru` layer found in `garnn.components.garnn_gru` is the diffusional & attention-based GRU introduced by [Cirstea et al., 2019](https: // milets19.github.io / papers / milets19_paper_8.pdf). It operates on temporal graph signals and an attention mechanism. Initate with
 
 | Parameter | Function |
 |: ------------- | : --------|

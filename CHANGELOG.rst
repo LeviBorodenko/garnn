@@ -16,3 +16,4 @@ Version 0.9.1
 
 - Wrote README.md
 - Added requirements
+- uploading to TestPyPi
