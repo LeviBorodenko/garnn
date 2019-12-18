@@ -18,7 +18,7 @@ The `AttentionMechanism` found in `garnn.components.attention` will take a graph
 The layer is initiated with the following parameters:
 
 | Parameter | Function |
-|: ------------- | : --------|
+|:------------- | :--------|
 |`F` (required) | Dimension of internal embedding.|
 |`adjacency_matrix` (required) | Adjacency matrix of the graph.|
 |`num_heads` (default: 1) | Number of attention matrices that are averaged to return the output attention.|
@@ -29,7 +29,7 @@ The output is of shape (batch, N, N). If `use_reverse_diffusion` is true then we
 The `GraphDiffusionConvolution` layer in `garnn.layers.diffconv` offers diffusion graph convolution as described by [(Li et al., 2017)](https://arxiv.org/pdf/1707.01926.pdf). It operates on a tuple containing a graph signal X and an adjacency matrix A(usually an attention matrix returned by an attention mechanism) and is initiated with the following parameters
 
 | Parameter | Function |
-|: ------------- | : --------|
+|:------------- | :--------|
 |`features` (required) | Number output features. Q in the paper.|
 |`num_diffusion_steps` (required) | Number of hops done by the diffusion process. K in the paper. |
 
@@ -62,7 +62,7 @@ Both `AttentionMechanism` and `DiffusionGraphConvolution` naturally extend to te
 The `garnn_gru` layer found in `garnn.components.garnn_gru` is the diffusional & attention-based GRU introduced by [Cirstea et al., 2019](https://milets19.github.io/papers/milets19_paper_8.pdf). It operates on temporal graph signals and an attention mechanism. Initiate with
 
 | Parameter | Function |
-|: ------------- | : --------|
+|:------------- | :--------|
 |`num_hidden_features` (required) | Number of features in the hidden state. (Q in the paper)|
 |`num_diffusion_steps` (default: 5) | Number of hops done by the diffusion process in all internal convolutions. K in the paper.|
 |`return_sequence` (default: False) | Whether or not the RNN should return the hidden state at each time step or only at the final time step. Set it to `True` if you stack another RNN layer on top of this one.|
