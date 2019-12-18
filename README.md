@@ -1,19 +1,19 @@
 # GARNN [TensorFlow]
-TensorFlow implementation of _Graphical Attention Recurrent Networks_ based on work by [Cirstea et al., 2019](https:// milets19.github.io/papers/milets19_paper_8.pdf).
+TensorFlow implementation of _Graphical Attention Recurrent Networks_ based on work by [Cirstea et al., 2019](https://milets19.github.io/papers/milets19_paper_8.pdf).
 
-Moreover, we offer stand-alone implementations of the _Graph Attention Mechanism_ [(Veličković et al., 2017)](https: // arxiv.org / abs / 1710.10903) and _Diffusional Graph Convolution_ [(Li et al., 2017)](https: // arxiv.org / pdf / 1707.01926.pdf).
+Moreover, we offer stand-alone implementations of the _Graph Attention Mechanism_ [(Veličković et al., 2017)](https://arxiv.org/abs/1710.10903) and _Diffusional Graph Convolution_ [(Li et al., 2017)](https://arxiv.org/pdf/1707.01926.pdf).
 
 ### Installation
 Simply run `pip install garnn`. Dependencies are `numpy; tensorflow`.
 
 ### Features
 
-The core data structure is the _graph signal_. If we have N nodes in a graph each having F observed features then the graph signal is the tensor with shape (batch, N, F) corresponding to the data produced by all nodes. Often we have sequences of graph signals in a time series. We will call them _temporal_ graph signals and assume a shape of (batch, timesteps, N, F). We also need to know the adjacency matrix E of the underlying graph with shape (N, N).
+The core data structure is the _graph signal_. If we have N nodes in a graph each having F observed features then the graph signal is the tensor with shape (batch, N, F) corresponding to the data produced by all nodes. Often we have sequences of graph signals in a time series. We will call them _temporal_ graph signals and assume a shape of (batch, time steps, N, F). We also need to know the adjacency matrix E of the underlying graph with shape (N, N).
 
 #### Non-Temporal Data (batch, N, F)
 All but the recurrent layers work with non - temporal data, i.e. the data points are individual graph signals and not seqeunces of graph signals.
 
-The `AttentionMechanism` found in `garnn.components.attention` will take a graph signal and return an attention matrix as described in [Veličković et al., 2017](https: // arxiv.org / abs / 1710.10903).
+The `AttentionMechanism` found in `garnn.components.attention` will take a graph signal and return an attention matrix as described in [Veličković et al., 2017](https://arxiv.org/abs/1710.10903).
 
 The layer is initiated with the following parameters:
 
@@ -22,11 +22,11 @@ The layer is initiated with the following parameters:
 |`F` (required) | Dimension of internal embedding.|
 |`adjacency_matrix` (required) | Adjacency matrix of the graph.|
 |`num_heads` (default: 1) | Number of attention matrices that are averaged to return the output attention.|
-|`use_reverse_diffusion` (defaut: True) | Whether or not to calculate A_in and A_out as done by [Cirstea et al., 2019](https: // milets19.github.io / papers / milets19_paper_8.pdf). If E is symmetric then the value will be set to False.|
+|`use_reverse_diffusion` (default: True) | Whether or not to calculate A_in and A_out as done by [Cirstea et al., 2019](https://milets19.github.io/papers/milets19_paper_8.pdf). If E is symmetric then the value will be set to False.|
 
 The output is of shape (batch, N, N). If `use_reverse_diffusion` is true then we obtain 2 attention matrices and thus the shape is (batch, 2, N, N).
 
-The `GraphDiffusionConvolution` layer in `garnn.layers.diffconv` offers diffusion graph convolution as descirbed by [(Li et al., 2017)](https: // arxiv.org / pdf / 1707.01926.pdf). It operates on a tuple containing a graph signal X and an adjancency matric A(usually an attention matrix returned by an attention mechanism) and is initiated with the following parameters
+The `GraphDiffusionConvolution` layer in `garnn.layers.diffconv` offers diffusion graph convolution as described by [(Li et al., 2017)](https://arxiv.org/pdf/1707.01926.pdf). It operates on a tuple containing a graph signal X and an adjacency matrix A(usually an attention matrix returned by an attention mechanism) and is initiated with the following parameters
 
 | Parameter | Function |
 |: ------------- | : --------|
@@ -55,11 +55,11 @@ output = GraphDiffusionConvolution(
 ```
 
 
-#### Temporal Data (batch, timesteps, N, F)
+#### Temporal Data (batch, time steps, N, F)
 
-Both `AttentionMechanism` and `DiffusionGraphConvolution` naturally extend to temporal graph signals. The output now simply has an additional timesteps dimension.
+Both `AttentionMechanism` and `DiffusionGraphConvolution` naturally extend to temporal graph signals. The output now simply has an additional time steps dimension.
 
-The `garnn_gru` layer found in `garnn.components.garnn_gru` is the diffusional & attention-based GRU introduced by [Cirstea et al., 2019](https: // milets19.github.io / papers / milets19_paper_8.pdf). It operates on temporal graph signals and an attention mechanism. Initate with
+The `garnn_gru` layer found in `garnn.components.garnn_gru` is the diffusional & attention-based GRU introduced by [Cirstea et al., 2019](https://milets19.github.io/papers/milets19_paper_8.pdf). It operates on temporal graph signals and an attention mechanism. Initiate with
 
 | Parameter | Function |
 |: ------------- | : --------|
@@ -67,7 +67,7 @@ The `garnn_gru` layer found in `garnn.components.garnn_gru` is the diffusional &
 |`num_diffusion_steps` (default: 5) | Number of hops done by the diffusion process in all internal convolutions. K in the paper.|
 |`return_sequence` (default: False) | Whether or not the RNN should return the hidden state at each time step or only at the final time step. Set it to `True` if you stack another RNN layer on top of this one.|
 
-Hence, if we would like to rebuild a model similar to the one used by [Cirstea et al., 2019](https: // milets19.github.io / papers / milets19_paper_8.pdf) then one needs to run
+Hence, if we would like to rebuild a model similar to the one used by [Cirstea et al., 2019](https://milets19.github.io/papers/milets19_paper_8.pdf) then one needs to run
 
 ```python
 import numpy as np

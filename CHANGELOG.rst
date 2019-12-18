@@ -17,3 +17,9 @@ Version 0.9.1
 - Wrote README.md
 - Added requirements
 - uploading to TestPyPi
+
+Version 0.9.2
+===========
+
+- fixing README.md
+- removed pyscaffold spam from setup.cfg
