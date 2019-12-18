@@ -24,3 +24,8 @@ Version 0.9.2
 - fixing README.md
 - removed pyscaffold spam from setup.cfg
 - uploading to TestPyPi and testing if it installs correctly
+
+Version 0.9.3
+===========
+
+- Final upload to real pypi and final test
