@@ -26,7 +26,7 @@ The layer is initiated with the following parameters:
 
 The output is of shape (batch, N, N). If `use_reverse_diffusion` is true then we obtain 2 attention matrices and thus the shape is (batch, 2, N, N).
 
-The `GraphDiffusionConvolution` layer in `garnn.layers.diffconv` offers diffusion graph convolution as described by [(Li et al., 2017)](https://arxiv.org/pdf/1707.01926.pdf). It operates on a tuple containing a graph signal X and an adjacency matrix A (usually an attention matrix returned by an attention mechanism) and is initiated with the following parameters
+The `GraphDiffusionConvolution` layer in `garnn.layers.diffconv` offers diffusion graph convolution as described by [Li et al., 2017](https://arxiv.org/pdf/1707.01926.pdf). It operates on a tuple containing a graph signal X and an adjacency matrix A (usually an attention matrix returned by an attention mechanism) and is initiated with the following parameters
 
 | Parameter | Function |
 |:------------- | :--------|
