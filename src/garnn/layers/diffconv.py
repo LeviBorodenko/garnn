@@ -8,6 +8,10 @@ from tensorflow.keras import constraints, initializers, regularizers
 
 from garnn.layers.utils import is_using_reverse_process
 
+__author__ = "Levi Borodenko"
+__copyright__ = "Levi Borodenko"
+__license__ = "mit"
+
 
 class DiffuseFeatures(layers.Layer):
     """Applies diffusion graph convolution given a

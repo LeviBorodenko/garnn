@@ -3,6 +3,10 @@ import tensorflow as tf
 from tensorflow.keras import initializers, regularizers
 from tensorflow.keras.layers import Layer
 
+__author__ = "Levi Borodenko"
+__copyright__ = "Levi Borodenko"
+__license__ = "mit"
+
 
 class GraphAttentionHead(Layer):
     """Returns an attention matrix based on the graph signal.

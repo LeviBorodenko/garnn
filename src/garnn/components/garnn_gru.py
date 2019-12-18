@@ -3,6 +3,10 @@ import tensorflow.keras.layers as layers
 
 from garnn.layers.diffconv import GraphDiffusionConvolution
 
+__author__ = "Levi Borodenko"
+__copyright__ = "Levi Borodenko"
+__license__ = "mit"
+
 
 class GRUCell(layers.Layer):
     """Cell class for the GARNN-GRU recurrent layer.

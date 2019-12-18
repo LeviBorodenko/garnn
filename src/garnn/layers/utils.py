@@ -1,3 +1,8 @@
+__author__ = "Levi Borodenko"
+__copyright__ = "Levi Borodenko"
+__license__ = "mit"
+
+
 def is_using_reverse_process(input_shape):
     """Check if output of attention meachanism is a single
     Attention matrix or 2 attention matrices - one for A_in

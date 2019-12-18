@@ -15,6 +15,11 @@ from tensorflow.keras.layers import Input
 from garnn.components.attention import AttentionMechanism
 from garnn.components.garnn_gru import garnn_gru
 
+__author__ = "Levi Borodenko"
+__copyright__ = "Levi Borodenko"
+__license__ = "mit"
+
+
 # Creating random adjacency matrix E
 E = np.random.randint(0, 2, size=(207, 207))
 

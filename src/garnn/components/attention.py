@@ -3,6 +3,10 @@ import tensorflow.keras.layers as layers
 
 from garnn.layers.gat import GraphAttentionHead
 
+__author__ = "Levi Borodenko"
+__copyright__ = "Levi Borodenko"
+__license__ = "mit"
+
 
 class AttentionMechanism(layers.Layer):
     """Attention Mechanism utilised by GARNNs.
