@@ -33,4 +33,10 @@ Version 0.9.3
 Version 1.0.0
 ===========
 
-- All good. Ready for release
+- All good. Ready for release.
+
+Version 1.0.1
+===========
+
+- fixing naming bug where we could not use more than one AttentionMechanism due to
+  all such mechanisms having the same name but names need to be unique.

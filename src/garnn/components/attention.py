@@ -67,8 +67,9 @@ class AttentionMechanism(layers.Layer):
         num_heads: int = 1,
         use_reverse_diffusion: bool = True,
         use_bias: bool = True,
+        **kwargs
     ):
-        super(AttentionMechanism, self).__init__(name="AttentionMechanism")
+        super(AttentionMechanism, self).__init__(kwargs)
 
         # Number of hidden units for Attention Mechanism
         self.F = F
