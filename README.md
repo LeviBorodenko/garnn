@@ -1,17 +1,17 @@
 # GARNN [TensorFlow]
-TensorFlow implementation of _Graphical Attention Recurrent Networks_ based on work by [Cirstea et al., 2019](https://milets19.github.io/papers/milets19_paper_8.pdf).
+TensorFlow implementation of _Graphical Attention Recurrent Neural Networks_ based on work by [Cirstea et al., 2019](https://milets19.github.io/papers/milets19_paper_8.pdf).
 
 Moreover, we offer stand-alone implementations of the _Graph Attention Mechanism_ [(Veličković et al., 2017)](https://arxiv.org/abs/1710.10903) and _Diffusional Graph Convolution_ [(Li et al., 2017)](https://arxiv.org/pdf/1707.01926.pdf).
 
 ### Installation
 Simply run `pip install garnn`. Dependencies are `numpy; tensorflow`.
 
-### Features
+### Usage
 
 The core data structure is the _graph signal_. If we have N nodes in a graph each having F observed features then the graph signal is the tensor with shape (batch, N, F) corresponding to the data produced by all nodes. Often we have sequences of graph signals in a time series. We will call them _temporal_ graph signals and assume a shape of (batch, time steps, N, F). We also need to know the adjacency matrix E of the underlying graph with shape (N, N).
 
 #### Non-Temporal Data (batch, N, F)
-All but the recurrent layers work with non - temporal data, i.e. the data points are individual graph signals and not sequences of graph signals.
+All but the recurrent layers work with non-temporal data, i.e. the data points are individual graph signals and not sequences of graph signals.
 
 The `AttentionMechanism` found in `garnn.components.attention` will take a graph signal and return an attention matrix as described in [Veličković et al., 2017](https://arxiv.org/abs/1710.10903).
 
@@ -26,7 +26,7 @@ The layer is initiated with the following parameters:
 
 The output is of shape (batch, N, N). If `use_reverse_diffusion` is true then we obtain 2 attention matrices and thus the shape is (batch, 2, N, N).
 
-The `GraphDiffusionConvolution` layer in `garnn.layers.diffconv` offers diffusion graph convolution as described by [(Li et al., 2017)](https://arxiv.org/pdf/1707.01926.pdf). It operates on a tuple containing a graph signal X and an adjacency matrix A (usually an attention matrix returned by an attention mechanism) and is initiated with the following parameters
+The `GraphDiffusionConvolution` layer in `garnn.layers.diffconv` offers diffusion graph convolution as described by [Li et al., 2017](https://arxiv.org/pdf/1707.01926.pdf). It operates on a tuple containing a graph signal X and a transition matrix A (usually an attention matrix returned by an attention mechanism) and is initiated with the following parameters
 
 | Parameter | Function |
 |:------------- | :--------|
@@ -87,19 +87,19 @@ E = np.random.randint(0, 2, size=(207, 207))
 X = Input(shape=(None, 207, 10))
 
 # creating attention mechanism with 3 heads and an
-# embedding size of 16
+# embedding-size of 16
 A = AttentionMechanism(16, adjacency_matrix=E, num_heads=3)(X)
 
-# now piping X and A into the 2 GRU layers
+# Piping X and A into the 2 stacked GRU layers.
 # First layer streches the features into 64 diffused features.
-# We assume the we are using 6 hop diffusions.
+# We assume that we are using 6 hop diffusions.
 gru_1 = garnn_gru(num_hidden_features=64, num_diffusion_steps=6, return_sequences=True)(
     (X, A)
 )
 
-# And then we use another GRU to shrink it back to 1 feature - the feature
+# And then we use the 2nd GRU to shrink it back to 1 feature - the feature
 # that we are predicting. We use the same attention for this layer, but note that
-# we could also introduce a new attention mechanism for the next GRU.
+# we could've also introduce a new attention mechanism for this GRU.
 output = garnn_gru(num_hidden_features=1, num_diffusion_steps=6)((gru_1, A))
 
 garnn_model = Model(inputs=X, outputs=output)
