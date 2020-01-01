@@ -40,3 +40,9 @@ Version 1.0.1
 
 - fixing naming bug where we could not use more than one AttentionMechanism due to
   all such mechanisms having the same name but names need to be unique.
+
+Version 1.0.2
+===========
+
+- Added RaggedTensorFeeder utensil that is able to feed a ragged tensor as
+data to an RNN model that can only train on non ragged batches.
