@@ -46,3 +46,9 @@ Version 1.0.2
 
 - Added RaggedTensorFeeder utensil that is able to feed a ragged tensor as
 data to an RNN model that can only train on non ragged batches.
+
+Version 1.0.3
+===========
+
+- Fixed using an average layer for only one attention head.
+- Fixed issue with many weights not being trained due to kwargs being passed to the parent object in the layer definitions.

@@ -41,7 +41,7 @@ class DiffuseFeatures(layers.Layer):
         use_activation: bool = False,
         **kwargs
     ):
-        super(DiffuseFeatures, self).__init__(kwargs)
+        super(DiffuseFeatures, self).__init__()
 
         # number of diffusino steps (K in paper)
         self.K = num_diffusion_steps
@@ -137,7 +137,7 @@ class GraphDiffusionConvolution(layers.Layer):
         use_activation: bool = False,
         **kwargs
     ):
-        super(GraphDiffusionConvolution, self).__init__(kwargs)
+        super(GraphDiffusionConvolution, self).__init__()
 
         # number of features to generate (Q in paper)
         assert features > 0

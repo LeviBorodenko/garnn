@@ -36,7 +36,7 @@ class GRUCell(layers.Layer):
         num_diffusion_steps: int = 5,
         **kwargs
     ):
-        super(GRUCell, self).__init__(**kwargs)
+        super(GRUCell, self).__init__()
 
         # number of hidden features for the GRU mechanism
         assert num_hidden_features > 0

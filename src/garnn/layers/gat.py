@@ -50,7 +50,7 @@ class GraphAttentionHead(Layer):
         attn_vector_regularizer=None,
         **kwargs
     ):
-        super(GraphAttentionHead, self).__init__(**kwargs)
+        super(GraphAttentionHead, self).__init__()
 
         # Number of features we extract and then
         # recombine to generate the attention.
@@ -113,6 +113,7 @@ class GraphAttentionHead(Layer):
             initializer=self.kernel_initializer,
             regularizer=self.kernel_regularizer,
             name="attn_kernel",
+            trainable=True,
         )
 
         # initializing Bias
@@ -122,6 +123,7 @@ class GraphAttentionHead(Layer):
                 initializer=self.bias_initializer,
                 regularizer=self.bias_regularizer,
                 name="attn_bias",
+                trainable=True,
             )
 
         # in the paper we need to calculate
@@ -134,14 +136,17 @@ class GraphAttentionHead(Layer):
             initializer=self.attn_vector_initializer,
             regularizer=self.attn_vector_regularizer,
             name="attn_vector_1",
+            trainable=True,
         )
         self.v_2 = self.add_weight(
             shape=(self.F, 1),
             initializer=self.attn_vector_initializer,
             regularizer=self.attn_vector_regularizer,
             name="attn_vector_2",
+            trainable=True,
         )
 
+    @tf.function
     def get_attention(self, graph_signal, adjacency_matrix):
 
         # If X is the graph signal then note that

@@ -69,7 +69,7 @@ class AttentionMechanism(layers.Layer):
         use_bias: bool = True,
         **kwargs
     ):
-        super(AttentionMechanism, self).__init__(kwargs)
+        super(AttentionMechanism, self).__init__()
 
         # Number of hidden units for Attention Mechanism
         self.F = F
@@ -105,4 +105,7 @@ class AttentionMechanism(layers.Layer):
             attention_layers.append(layer(inputs))
 
         # now average all their outputs
-        return layers.Average()(attention_layers)
+        if self.num_heads > 1:
+            return layers.Average()(attention_layers)
+        else:
+            return attention_layers[0]
